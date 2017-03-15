@@ -1,43 +1,41 @@
+package awsprog
+
 import scala.util.Random
 
-class GameOfLife {
+import javax.swing.JFrame
+
+class GameOfLife(frame: Window) {
   
-  val ymax                           = 30
-  val xmax                           = 80
-  val seed                           = 0.1
+  val ymax                           = 100
+  val xmax                           = 150
+  val probabilityOfLife                 = 0.08
   val generationInterval             = 100
   
   val numberOfNeighboursToCreateLife = 3
   val tooManyNeighbours              = 3
   val tooFewNeighbours               = 2
   
-  val alive                          = "X"
-  val dead                           = "." 
+  val alive                          = true
+  val dead                           = false
   
   def start() : Unit = {
     val environment = generateStartEnvironment()
     turn(environment, 1)
   }
   
-  def turn(environment: Array[Array[String]], generation: Int) {
+  def turn(environment: Array[Array[Boolean]], generation: Int) {
     Thread.sleep(generationInterval) 
-    draw(environment, generation)
+    draw(environment)
     turn(applyRules(environment),next(generation))
   }
 
-  def draw(environment: Array[Array[String]], generation: Int) {
-    println("Generation: " + generation)
-    environment.foreach { y => y.foreach { print }
-    println
-    }
-    println  
-    println
-    println
+  def draw(environment: Array[Array[Boolean]]) {
+    frame.update(environment)
   }
   
   def next(generation: Int) : Int = generation + 1 
   
-  def applyRules(environment: Array[Array[String]]) : Array[Array[String]] = {
+  def applyRules(environment: Array[Array[Boolean]]) : Array[Array[Boolean]] = {
     environment.zipWithIndex.map { case (row, rowIndex) => 
       row.zipWithIndex.map { case (cell, columnIndex) =>
       val livingNeighbours = countLiveNeighbours(rowIndex,columnIndex,environment)
@@ -49,16 +47,16 @@ class GameOfLife {
     }
   }
   
-  def applyRulesToDeadCell(livingNeighbours: Int) : String = {
-    aliveOrDead(livingNeighbours == numberOfNeighboursToCreateLife)
+  def applyRulesToDeadCell(livingNeighbours: Int) : Boolean = {
+    livingNeighbours == numberOfNeighboursToCreateLife
   }
   
-  def applyRulesToLivingCell(livingNeighbours: Int) : String = {
-    aliveOrDead((livingNeighbours >= tooFewNeighbours) && 
-                (livingNeighbours <= tooManyNeighbours))
+  def applyRulesToLivingCell(livingNeighbours: Int) : Boolean = {
+    (livingNeighbours >= tooFewNeighbours) && 
+    (livingNeighbours <= tooManyNeighbours)
   }
   
-  def countLiveNeighbours(y: Int, x: Int, environment: Array[Array[String]]) : Int = {
+  def countLiveNeighbours(y: Int, x: Int, environment: Array[Array[Boolean]]) : Int = {
     checkIsAlive(y, x-1,environment)   + 
     checkIsAlive(y, x+1,environment)   + 
     checkIsAlive(y-1, x-1,environment) + 
@@ -69,7 +67,7 @@ class GameOfLife {
     checkIsAlive(y+1, x+1,environment)
   }
   
-  def checkIsAlive(y: Int, x: Int, environment: Array[Array[String]]) : Int = {
+  def checkIsAlive(y: Int, x: Int, environment: Array[Array[Boolean]]) : Int = {
     if (withinBounds(y ,0, ymax) && 
         withinBounds(x ,0, xmax) && 
         environment(y)(x).equals(alive))
@@ -82,27 +80,21 @@ class GameOfLife {
     coordinate >= min && coordinate < max
   }
 
-  def generateLife() : String = {
-    aliveOrDead(Random.nextFloat() < seed) 
+  def generateLife() : Boolean = {
+    Random.nextFloat() < probabilityOfLife
   }
   
-  def generateStartEnvironment() : Array[Array[String]] = {
+  def generateStartEnvironment() : Array[Array[Boolean]] = {
       createArray().map { y => y.map { x => generateLife() } }
   } 
   
-  def createArray(): Array[Array[String]] = Array.ofDim[String](ymax,xmax)
-  
-  def aliveOrDead(shouldBeAlive: Boolean) : String = {
-    if (shouldBeAlive) 
-      alive
-    else 
-      dead  
-  }
+  def createArray(): Array[Array[Boolean]] = Array.ofDim[Boolean](ymax,xmax)
 }
 
 object GameOfLife {
   def main(args: Array[String]) {
-    val game = new GameOfLife()
-        game.start()
+    val frame = new Window()
+    val game = new GameOfLife(frame)
+    game.start()
   }
 }
