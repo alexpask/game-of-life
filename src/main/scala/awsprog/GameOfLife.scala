@@ -8,7 +8,7 @@ class GameOfLife(frame: Window) {
   
   val ymax                           = 100
   val xmax                           = 150
-  val probabilityOfLife                 = 0.08
+  val probabilityOfLife              = 0.08
   val generationInterval             = 100
   
   val numberOfNeighboursToCreateLife = 3
@@ -19,32 +19,35 @@ class GameOfLife(frame: Window) {
   val dead                           = false
   
   def start() : Unit = {
-    val environment = generateStartEnvironment()
-    turn(environment, 1)
+    val firstGeneration = generateStartingGeneration()
+    turn(firstGeneration)
   }
   
-  def turn(environment: Array[Array[Boolean]], generation: Int) {
+  def turn(generation: Generation) {
     Thread.sleep(generationInterval) 
-    draw(environment)
-    turn(applyRules(environment),next(generation))
+    draw(generation)
+    turn(next(applyRules(generation)))
   }
 
-  def draw(environment: Array[Array[Boolean]]) {
-    frame.update(environment)
+  def draw(generation: Generation) {
+    frame.update(generation)
   }
   
-  def next(generation: Int) : Int = generation + 1 
+  def next(generation: Generation): Generation = {
+    new Generation(generation.land, generation.turn + 1) 
+  }
   
-  def applyRules(environment: Array[Array[Boolean]]) : Array[Array[Boolean]] = {
-    environment.zipWithIndex.map { case (row, rowIndex) => 
+  def applyRules(generation: Generation) : Generation = {
+    val environment = generation.land.zipWithIndex.map { case (row, rowIndex) => 
       row.zipWithIndex.map { case (cell, columnIndex) =>
-      val livingNeighbours = countLiveNeighbours(rowIndex,columnIndex,environment)
+      val livingNeighbours = countLiveNeighbours(rowIndex,columnIndex,generation.land)
       if (cell.equals(alive))
         applyRulesToLivingCell(livingNeighbours)
       else
         applyRulesToDeadCell(livingNeighbours)
       }
     }
+    new Generation(environment, generation.turn)
   }
   
   def applyRulesToDeadCell(livingNeighbours: Int) : Boolean = {
@@ -84,8 +87,8 @@ class GameOfLife(frame: Window) {
     Random.nextFloat() < probabilityOfLife
   }
   
-  def generateStartEnvironment() : Array[Array[Boolean]] = {
-      createArray().map { y => y.map { x => generateLife() } }
+  def generateStartingGeneration() : Generation = {
+      new Generation (createArray().map { y => y.map { x => generateLife() } }, 1)
   } 
   
   def createArray(): Array[Array[Boolean]] = Array.ofDim[Boolean](ymax,xmax)

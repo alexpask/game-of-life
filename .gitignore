@@ -16,6 +16,10 @@ project/plugins/project/
 .scala_dependencies
 .worksheet
 
+# Eclipse specific
+.classpath
+.settings/
+
 # =========================
 # Operating System Files
 # =========================

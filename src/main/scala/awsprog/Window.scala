@@ -16,9 +16,9 @@ class Window extends JFrame {
   val grid = new Grid(150, 100)
   add(grid)
   
-  def update(environment: Array[Array[Boolean]]) {
+  def update(generation: Generation) {
     grid.clear()
-    environment.zipWithIndex.foreach { case (row, rowIndex) =>
+    generation.land.zipWithIndex.foreach { case (row, rowIndex) =>
       row.zipWithIndex.foreach { case (cell, columnIndex) => 
         if (cell.equals(true))
           grid.fillCell(columnIndex, rowIndex)
